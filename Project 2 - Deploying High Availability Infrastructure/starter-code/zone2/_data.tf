@@ -19,7 +19,7 @@ data "aws_caller_identity" "current" {}
 data "terraform_remote_state" "vpc" {
   backend = "s3" 
   config = {
-     bucket = "udacity-tf-bgam-west"
+     bucket = "udacity-tf-bgam"
      key    = "terraform/terraform.tfstate"
      region = "us-east-2"
    }
