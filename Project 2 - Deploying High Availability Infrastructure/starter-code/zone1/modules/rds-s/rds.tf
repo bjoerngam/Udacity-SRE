@@ -1,8 +1,18 @@
-variable primary_db_cluster_arn {}
-variable primary_db_instance_arn {}
+# resource "aws_db_instance" "default" {
+#   allocated_storage    = 10
+#   engine               = "mysql"
+#   engine_version       = "5.7"
+#   instance_class       = "db.t3.micro"
+#   username             = "udacity"
+#   password             = "MyUdacityPassword"
+#   parameter_group_name = "default.mysql5.7"
+#   multi-az             = true
+#   skip_final_snapshot  = true
+# }
 
-resource "aws_rds_cluster_parameter_group" "cluster_pg-s" {
-  name   = "udacity-pg-s"
+
+resource "aws_rds_cluster_parameter_group" "cluster_pg" {
+  name   = "udacity-pg-p"
   family = "aurora5.6"
 
   parameter {
@@ -21,33 +31,42 @@ resource "aws_rds_cluster_parameter_group" "cluster_pg-s" {
 resource "aws_db_subnet_group" "udacity_db_subnet_group" {
   name       = "udacity_db_subnet_group"
   subnet_ids = var.private_subnet_ids
-}
 
-resource "aws_rds_cluster" "udacity_cluster-s" {
-  cluster_identifier       = "udacity-db-cluster-s"
-  availability_zones       = ["us-west-1b", "us-west-1c"]
-  db_cluster_parameter_group_name = aws_rds_cluster_parameter_group.cluster_pg-s.name
-  vpc_security_group_ids   = [aws_security_group.db_sg_2.id]
+}
+resource "aws_rds_cluster" "udacity_cluster" {
+  cluster_identifier       = "udacity-db-cluster"
+  availability_zones       = ["us-east-2a", "us-east-2b"]
+  db_cluster_parameter_group_name = aws_rds_cluster_parameter_group.cluster_pg.name
+  database_name            = "udacityc2"
+  master_username          = "udacity"
+  master_password          = "MyUdacityPassword"
+  vpc_security_group_ids   = [aws_security_group.db_sg_1.id]
   db_subnet_group_name     = aws_db_subnet_group.udacity_db_subnet_group.name
   engine_mode              = "provisioned"
   engine_version           = "5.6.mysql_aurora.1.19.1" 
   skip_final_snapshot      = true
   storage_encrypted        = false
   backup_retention_period  = 5
-  replication_source_identifier = var.primary_db_cluster_arn
-  source_region = "us-east-2"
-  depends_on = [var.primary_db_instance_arn]
+  depends_on = [aws_rds_cluster_parameter_group.cluster_pg]
 }
 
-resource "aws_rds_cluster_instance" "udacity_instance-s" {
-  count                = 2
-  identifier           = "udacity-db-instance-${count.index}-s"
-  cluster_identifier   = aws_rds_cluster.udacity_cluster-s.id
+output "db_cluster_arn" {
+  value = aws_rds_cluster.udacity_cluster.arn
+}
+
+output "db_instance_arn" {
+  value = aws_rds_cluster_instance.udacity_instance[0].arn
+}
+
+resource "aws_rds_cluster_instance" "udacity_instance" {
+  count                = 1
+  identifier           = "udacity-db-instance-${count.index}"
+  cluster_identifier   = aws_rds_cluster.udacity_cluster.id
   instance_class       = "db.t2.small"
   db_subnet_group_name = aws_db_subnet_group.udacity_db_subnet_group.name
 }
 
-resource "aws_security_group" "db_sg_2" {
+resource "aws_security_group" "db_sg_1" {
   name   = "udacity-db-sg"
   vpc_id =  var.vpc_id
 
