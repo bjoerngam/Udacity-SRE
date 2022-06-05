@@ -7,23 +7,23 @@ For zone2: us-west-1b, us-west-1c
 ## Servers and Clusters
 
 ### Table 1.1 Summary
-| Asset                            | Purpose                                                 | Size           | Qty | DR                                                                   |
-|----------------------------------|---------------------------------------------------------|----------------|-----|----------------------------------------------------------------------|
-| i-0cceff027d8f41a40              | EC2 instance                                            | t3 medium      | 1   | Yes, has to be replicated. Runs in a single AZ.                      |
-| i-0cceff034032253a40             | EC2 instance                                            | t3 medium      | 1   | Yes, has to be replicated. Runs in a single AZ.                      |
-| Ubuntu Web                       | Web Server                                              | t3 micro       | 1   | Yes, has to be replicated (our webserver) Runs in a single AZ.       |
-| udacity-tf-bgam                  | S3 filestore for the tfstate file                       | S3             | 1   | Yes for storing the tfstate, re-create S3 store, Runs in a single AZ |
-| udacity-tf-bgam-west             | S3 filestore for the tfstate file                       | S3             | 1   | Yes for storing the tfstate, re-create S3 store, Runs in a single AZ |
-| udacity-cluster                  | EKS cluster with 2 notes                                | EKS cluster    | 1   | Yes for serving the requests, Runs in a single AZ                    |
-| a384a6fde96f24ed1aba5f705b7e4066 | ALB                                                     | ALB            | 1   | Yes for serving the requests, Runs in a single AZ                    |
-| udacity-db-cluster               | RDS cluster (mysql_aurora.1.19.1) with one read replica | db.t2.small    | 1   | Yes otherwise we cannot store data into our db, multi AZ             |
-| udacity-project                  | VPC for our enviornment                                 | VPC            | 1   | No, will be recreated after redeployment                             |
-| sgr-07e7ea44993684ee1            | Security group ingress port 22                          | Security group | 1   | Yes, we need this for SSH access                                     |
-| sgr-0b3c08c0bb681e833            | Security group ingress port 80                          | Security group | 1   | Yes, we need this for the HTTPD server                               |
-| sgr-0c6b12c8410dcdd26            | Security group ingress port 9100                        | Security group | 1   | Yes, we need this for the Flusk client at the EC2 instance.          |
-| udacity-bgam                     | AMI image                                               | AMI            | 1   | Yes, this is the baseline for our Linux instances.                   |
-| udacity                          | SSH key                                                 | N/A            | 1   | SSH key for the instances.                                           |
-| Monitoring                       | Monitoring plattform for the web application            | N/A            | 1   | Yes, we need this also in our backup zone.                           |
+| Asset                            | Purpose                                                                                                                                             | Size           | Qty | DR                                                                   |
+|----------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|----------------|-----|----------------------------------------------------------------------|
+| i-0cceff027d8f41a40              | EC2 instance, EKS cluster node, AMI: amazon-eks-node-1.21-v20220526                                                                                 | t3 medium      | 1   | Yes, has to be replicated. Runs in a single AZ.                      |
+| i-0cceff034032253a40             | EC2 instance, EKS cluster node, AMI: amazon-eks-node-1.21-v20220526                                                                                 | t3 medium      | 1   | Yes, has to be replicated. Runs in a single AZ.                      |
+| Ubuntu Web                       | Web Server with our Flusk application. OS level is our Linux AMI.                                                                                   | t3 micro       | 1   | Yes, has to be replicated (our webserver) Runs in a single AZ.       |
+| udacity-tf-bgam                  | S3 bucket for the tfstate file. The file stores the current status of the terraform deployment                                                      | S3             | 1   | Yes for storing the tfstate, re-create S3 store, Runs in a single AZ |
+| udacity-tf-bgam-west             | S3 bucket for the tfstate file. The file stores the current status of the terraform deployment, but for the US-WEST-1 region.                       | S3             | 1   | Yes for storing the tfstate, re-create S3 store, Runs in a single AZ |
+| udacity-cluster                  | Elastic Kubernetes cluster with 2 notes. Makes sure that our application is HA.#                                                                    | EKS cluster    | 1   | Yes for serving the requests, Runs in a single AZ                    |
+| a384a6fde96f24ed1aba5f705b7e4066 | Elastic loadbalancer for performing (together with Route53) a smooth failover to another region.                                                    | ALB            | 1   | Yes for serving the requests, Runs in a single AZ                    |
+| udacity-db-cluster               | RDS cluster (mysql_aurora.1.19.1) with one read replica and one wirte replica. The read replica will help to mitigate performance issues in one AZ. | db.t2.small    | 1   | Yes otherwise we cannot store data into our db, multi AZ.            |
+| udacity-project                  | VPC for our enviornment. Our virtual private network here are all of our resources are running. All of our network layer operations are happen her. | VPC            | 1   | No, will be recreated after redeployment                             |
+| sgr-07e7ea44993684ee1            | Security group ingress port 22 for getting access to our instances via ssh                                                                          | Security group | 1   | Yes, we need this for SSH access                                     |
+| sgr-0b3c08c0bb681e833            | Security group ingress port 80 the http port for getting access to our webapplication.                                                              | Security group | 1   | Yes, we need this for the HTTPD server                               |
+| sgr-0c6b12c8410dcdd26            | Security group ingress port 9100 for getting the performance information from our EC2 instance.                                                     | Security group | 1   | Yes, we need this for the Flusk client at the EC2 instance.          |
+| udacity-bgam                     | AMI image contains the OS which is in use at the different EC2 instances.                                                                           | AMI            | 1   | Yes, this is the baseline for our Linux instances.                   |
+| udacity                          | SSH key, for getting direct access to the instances. As a workaround the direct access via the AWS console can be used.                             | N/A            | 1   | SSH key for the instances.                                           |
+| Monitoring                       | Monitoring plattform for the web application. We are using Grafana in combination with Prometheus.                                                  | N/A            | 1   | Yes, we need this also in our backup zone.                           |
 
 
 ### Descriptions
